@@ -1,9 +1,4 @@
-import type {
-	ICredentialTestRequest,
-	ICredentialType,
-	Icon,
-	INodeProperties,
-} from 'n8n-workflow';
+import type { ICredentialType, Icon, INodeProperties } from 'n8n-workflow';
 
 export class BotPenguinApi implements ICredentialType {
 	name = 'botPenguinApi';
@@ -13,12 +8,20 @@ export class BotPenguinApi implements ICredentialType {
 
 	properties: INodeProperties[] = [
 		{
-			displayName: 'Access Token',
+			displayName: 'API Key',
 			name: 'accessToken',
 			type: 'string',
 			default: '',
 			typeOptions: { password: true },
-			description: 'API access token (passed as query param access_token)',
+			description: 'API access token',
+			required: true,
+		},
+		{
+			displayName: 'Bot ID',
+			name: 'botId',
+			type: 'string',
+			default: '',
+			description: 'Bot identifier',
 			required: true,
 		},
 	];
@@ -28,18 +31,10 @@ export class BotPenguinApi implements ICredentialType {
 		properties: {
 			qs: {
 				access_token: '={{$credentials.accessToken}}',
+				botId: '={{$credentials.botId}}',
 			},
 		},
 	};
 
-	testedBy = ['e1Test'];
-
-	test: ICredentialTestRequest = {
-		request: {
-			method: 'GET',
-			baseURL: 'https://e1-api.botpenguin.com',
-			url: '/inbox/users/import',
-		},
-	};
 }
 

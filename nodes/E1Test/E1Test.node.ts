@@ -56,13 +56,31 @@ export class E1Test implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
-						name: 'Create Contact',
+						name: 'Add a Contact',
 						value: 'createContact',
 						action: 'Create a contact',
 						description: 'Create a contact in BotPenguin',
 					},
 				],
 				default: 'createContact',
+			},
+			{
+				displayName: 'Phone Prefix',
+				name: 'phonePrefix',
+				type: 'string',
+				default: '',
+				placeholder: '91',
+				description: 'Country calling code (prefix)',
+				required: true,
+			},
+			{
+				displayName: 'Phone Number',
+				name: 'phoneNumber',
+				type: 'string',
+				default: '',
+				placeholder: '9876543210',
+				description: 'Phone number without country code',
+				required: true,
 			},
 			{
 				displayName: 'Name',
@@ -81,39 +99,6 @@ export class E1Test implements INodeType {
 				placeholder: 'jane@example.com',
 				description: 'Email address of the contact',
 			},
-			{
-				displayName: 'Phone Number',
-				name: 'phoneNumber',
-				type: 'string',
-				default: '',
-				placeholder: '9876543210',
-				description: 'Phone number without country code',
-			},
-			{
-				displayName: 'Phone Prefix',
-				name: 'phonePrefix',
-				type: 'string',
-				default: '91',
-				placeholder: '91',
-				description: 'Country calling code (prefix) - Defaults to 91',
-			},
-			{
-				displayName: 'Tags',
-				name: 'tags',
-				type: 'string',
-				typeOptions: {
-					multipleValues: true,
-				},
-				default: [],
-				description: 'Tags to associate with the contact',
-			},
-			{
-				displayName: 'Attributes (JSON)',
-				name: 'attributes',
-				type: 'json',
-				default: '[]',
-				description: 'Optional attributes array as JSON',
-			},
 		],
 	};
 
@@ -127,10 +112,6 @@ export class E1Test implements INodeType {
 				const email = this.getNodeParameter('email', itemIndex, '') as string;
 				const phoneNumber = this.getNodeParameter('phoneNumber', itemIndex, '') as string;
 				const phonePrefix = this.getNodeParameter('phonePrefix', itemIndex, '') as string;
-				const tagsParam = this.getNodeParameter('tags', itemIndex, []) as string[];
-				const tags = Array.isArray(tagsParam) ? tagsParam : [];
-				const attributesParam = this.getNodeParameter('attributes', itemIndex, []) as unknown;
-				const attributes = Array.isArray(attributesParam) ? attributesParam : [];
 
 				const contact: ContactDetails = {};
 				if (email) {
@@ -148,8 +129,6 @@ export class E1Test implements INodeType {
 						userDetails: {
 							userProvidedName,
 							contact: Object.keys(contact).length ? contact : undefined,
-							tags: tags.length ? tags : undefined,
-							attributes: attributes.length ? attributes : undefined,
 						},
 					},
 				};
@@ -162,6 +141,10 @@ export class E1Test implements INodeType {
 						Accept: '*/*',
 						'Content-Type': 'application/json',
 						authtype: 'Key',
+						botId: '={{$credentials.botId}}',
+					},
+					qs: {
+						botId: '={{$credentials.botId}}',
 					},
 					json: true,
 				});
