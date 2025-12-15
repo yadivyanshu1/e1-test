@@ -58,8 +58,8 @@ export class E1Test implements INodeType {
 					{
 						name: 'Add a Contact',
 						value: 'createContact',
-						action: 'Create a contact',
-						description: 'Create a contact in BotPenguin',
+						action: 'Add a contact',
+						description: 'Create a contact in BotPenguin (e1)',
 					},
 				],
 				default: 'createContact',
