@@ -67,6 +67,12 @@ export class E1Test implements INodeType {
 						action: 'Update contact attributes',
 						description: 'Update a contact attribute in BotPenguin.',
 					},
+					{
+						name: 'Send Session Message',
+						value: 'sendSessionMessage',
+						action: 'Send a session message',
+						description: 'Send a session message.',
+					},
 				],
 				default: 'createContact',
 			},
@@ -168,6 +174,35 @@ export class E1Test implements INodeType {
 					},
 				},
 			},
+			{
+				displayName: 'Search',
+				name: 'searchMessage',
+				type: 'string',
+				default: '',
+				placeholder: 'email / WhatsApp number with country code / UUID',
+				description:
+					'Please provide any one of the email, WhatsApp number, or UUID to send a message. WhatsApp numbers should include the country code; only numeric values are allowed.',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['sendSessionMessage'],
+					},
+				},
+			},
+			{
+				displayName: 'Message',
+				name: 'messageText',
+				type: 'string',
+				default: '',
+				placeholder: 'Hello!',
+				description: 'Enter the message text to be sent.',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['sendSessionMessage'],
+					},
+				},
+			},
 		],
 	};
 
@@ -255,6 +290,34 @@ export class E1Test implements INodeType {
 							'Content-Type': 'application/json',
 							authtype: 'Key',
 							Authorization: `Bearer ${accessToken}`,
+						},
+						json: true,
+					});
+
+					const responseItems = Array.isArray(response) ? response : [response];
+					for (const entry of responseItems) {
+						returnData.push({ json: entry as IDataObject });
+					}
+				} else if (operation === 'sendSessionMessage') {
+					const search = this.getNodeParameter('searchMessage', itemIndex) as string;
+					const messageText = this.getNodeParameter('messageText', itemIndex) as string;
+
+					const body = {
+						text: messageText,
+						search,
+						channel: platform
+					};
+
+					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
+						method: 'POST',
+						url: 'https://e1-api.botpenguin.com/integrations/custom-app/send-message-to-plugin',
+						body,
+						headers: {
+							Accept: '*/*',
+							'Content-Type': 'application/json',
+							authtype: 'Key',
+							Authorization: `Bearer ${accessToken}`,
+							botId,
 						},
 						json: true,
 					});
