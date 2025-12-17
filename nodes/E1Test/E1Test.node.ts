@@ -1,9 +1,13 @@
 import type {
 	IDataObject,
 	IExecuteFunctions,
+	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
+	ResourceMapperFields,
+	ResourceMapperField,
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
@@ -72,6 +76,12 @@ export class E1Test implements INodeType {
 						value: 'sendSessionMessage',
 						action: 'Send a session message',
 						description: 'Send a session message.',
+					},
+					{
+						name: 'Send Template Message',
+						value: 'sendTemplateMessage',
+						action: 'Send a template message',
+						description: 'Send a WhatsApp template message.',
 					},
 				],
 				default: 'createContact',
@@ -203,7 +213,83 @@ export class E1Test implements INodeType {
 					},
 				},
 			},
+			{
+				displayName: 'Select WhatsApp Bot',
+				name: 'whatsAppBot',
+				type: 'options',
+				default: '',
+				description: 'Select the WhatsApp bot to send messages.',
+				required: true,
+				typeOptions: {
+					loadOptionsMethod: 'getWhatsAppBots',
+				},
+				displayOptions: {
+					show: {
+						operation: ['sendTemplateMessage'],
+					},
+				},
+			},
+			{
+				displayName: 'Select WhatsApp Template',
+				name: 'whatsAppTemplate',
+				type: 'options',
+				default: '',
+				description: 'Select your WhatsApp message template.',
+				required: true,
+				typeOptions: {
+					loadOptionsMethod: 'getWhatsAppTemplates',
+					loadOptionsDependsOn: ['whatsAppBot'],
+				},
+				displayOptions: {
+					show: {
+						operation: ['sendTemplateMessage'],
+					},
+				},
+			},
+			{
+				displayName: 'WhatsApp Number',
+				name: 'whatsAppNumber',
+				type: 'string',
+				default: '',
+				placeholder: '91988101XXXX',
+				description: 'Enter the recipient\'s mobile number with the country code & without plus sign. (e.g. 91988101XXXX)',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['sendTemplateMessage'],
+					},
+				},
+			},
+			{
+				displayName: 'Template Variables',
+				name: 'templateVariables',
+				type: 'resourceMapper',
+				default: {},
+				typeOptions: {
+				  resourceMapper: {
+					resourceMapperMethod: 'getTemplateDynamicFields',
+					mode: 'map',
+					addAllFields: false,
+					multiKeyMatch: false,
+				  },
+				},
+				displayOptions: {
+				  show: {
+					operation: ['sendTemplateMessage'],
+				  },
+				},
+			  },
 		],
+	};
+
+	methods = {
+		loadOptions: {
+			getWhatsAppBots,
+			getWhatsAppTemplates,
+		},
+		resourceMapping: {
+			getTemplateDynamicFields,
+		  },
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
@@ -326,6 +412,38 @@ export class E1Test implements INodeType {
 					for (const entry of responseItems) {
 						returnData.push({ json: entry as IDataObject });
 					}
+				} else if (operation === 'sendTemplateMessage') {
+					const whatsAppBot = this.getNodeParameter('whatsAppBot', itemIndex) as string;
+					const whatsAppTemplate = this.getNodeParameter('whatsAppTemplate', itemIndex) as string;
+					const whatsAppNumber = this.getNodeParameter('whatsAppNumber', itemIndex) as string;
+
+					const variables = this.getNodeParameter('templateVariables', itemIndex, {}) as IDataObject;
+					const templateParams = (variables.value as IDataObject) || {};
+
+					const body = {
+						botId: whatsAppBot,
+						templateId: whatsAppTemplate,
+						whatsAppNumber,
+						templateParams,
+					};
+
+					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
+						method: 'POST',
+						url: 'https://e1-api.botpenguin.com/whatsapp-automation/plugin/send-template-message',
+						body,
+						headers: {
+							Accept: '*/*',
+							'Content-Type': 'application/json',
+							authtype: 'Key',
+							Authorization: `Bearer ${accessToken}`,
+						},
+						json: true,
+					});
+
+					const responseItems = Array.isArray(response) ? response : [response];
+					for (const entry of responseItems) {
+						returnData.push({ json: entry as IDataObject });
+					}
 				}
 			} catch (error) {
 				if (this.continueOnFail()) {
@@ -341,5 +459,99 @@ export class E1Test implements INodeType {
 
 		return [returnData];
 	}
+}
+
+async function getWhatsAppBots(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+	const credentials = await this.getCredentials('botPenguinApi');
+	const accessToken = (credentials?.accessToken as string) || '';
+
+	const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
+		method: 'GET',
+		url: 'https://e1-api.botpenguin.com/whatsapp-automation',
+		headers: {
+			Accept: '*/*',
+			authtype: 'Key',
+			Authorization: `Bearer ${accessToken}`,
+		},
+	});
+
+	const data = response.data || [];
+	return data.map((bot: IDataObject) => ({
+		name: (bot.name as string) || '',
+		value: (bot._id as string) || '',
+	}));
+}
+
+async function getWhatsAppTemplates(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+	const botId = this.getCurrentNodeParameter('whatsAppBot') as string;
+	if (!botId) {
+		return [];
+	}
+
+	const credentials = await this.getCredentials('botPenguinApi');
+	const accessToken = (credentials?.accessToken as string) || '';
+
+	const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
+		method: 'GET',
+		url: `https://e1-api.botpenguin.com/whatsapp-automation/plugin/templates/${botId}`,
+		headers: {
+			Accept: '*/*',
+			authtype: 'Key',
+			Authorization: `Bearer ${accessToken}`,
+		},
+	});
+
+	const data = response.data || [];
+	return data.map((template: IDataObject) => ({
+		name: ((template.configuration as IDataObject)?.name as string) || '',
+		value: (template._id as string) || '',
+	}));
+}
+
+async function getTemplateDynamicFields(this: ILoadOptionsFunctions): Promise<ResourceMapperFields> {
+	const templateId = this.getCurrentNodeParameter('whatsAppTemplate') as string;
+	if (!templateId) {
+		return {
+			fields: [{
+				id: 'placeholder',
+				displayName: 'Select a template to load fields',
+				name: 'placeholder',
+				type: 'string',
+				default: '',
+				description: '',
+				display: false,
+				defaultMatch: false,
+				required: false,
+			} as unknown as ResourceMapperField],
+		};
+	}
+
+	const credentials = await this.getCredentials('botPenguinApi');
+	const accessToken = (credentials?.accessToken as string) || '';
+
+	const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
+		method: 'GET',
+		url: `https://e1-api.botpenguin.com/whatsapp-automation/plugin/make-template-dynamic-fields/${templateId}`,
+		headers: {
+			Accept: '*/*',
+			authtype: 'Key',
+			Authorization: `Bearer ${accessToken}`,
+		},
+	});
+
+	return {
+		fields: (response.data || []).map((field: IDataObject) => ({
+			id: field.key as string,
+			displayName: field.key as string,
+			name: field.key as string,
+			type: 'string',
+			default: '',
+			description: field.value as string,
+			placeholder: field.value as string,
+			display: true,
+			defaultMatch: false,
+			required: false,
+		} as unknown as ResourceMapperField)),
+	};
 }
 
