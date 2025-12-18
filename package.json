@@ -37,6 +37,7 @@
 		],
 		"nodes": [
 			"dist/nodes/E1Test/E1Test.node.js",
+			"dist/nodes/E1Test/E1TestTrigger.node.js",
 			"dist/nodes/GithubIssues/GithubIssues.node.js",
 			"dist/nodes/Example/Example.node.js"
 		]
