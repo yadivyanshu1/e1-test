@@ -36,7 +36,7 @@ export class E1Test implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'E1 Test',
 		name: 'e1Test',
-		icon: 'file:../Example/example.svg',
+		icon: 'file:botpenguin.svg',
 		group: ['transform'],
 		version: 1,
 		description: 'Create contacts in BotPenguin (E1 test).',
