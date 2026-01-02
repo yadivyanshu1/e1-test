@@ -4,7 +4,7 @@ export class BotPenguinApi implements ICredentialType {
 	name = 'botPenguinApi';
 	displayName = 'BotPenguin API';
 	documentationUrl = 'https://botpenguin.com';
-	icon: Icon = { light: 'file:../nodes/Example/example.svg', dark: 'file:../nodes/Example/example.dark.svg' };
+	icon: Icon = 'file:botpenguin.svg';
 
 	properties: INodeProperties[] = [
 		{
@@ -31,11 +31,12 @@ export class BotPenguinApi implements ICredentialType {
 			default: 'WhatsApp',
 			description: 'Platform associated with the bot',
 			options: [
-				{ name: 'WhatsApp', value: 'WhatsApp' },
-				{ name: 'Instagram', value: 'Instagram' },
-				{ name: 'Facebook', value: 'Facebook' },
-				{ name: 'Telegram', value: 'Telegram' },
-				{ name: 'Website', value: 'Website' },
+				{ name: 'WhatsApp', value: 'whatsApp' },
+				{ name: 'Instagram', value: 'instagram' },
+				{ name: 'Facebook', value: 'facebook' },
+				{ name: 'Telegram', value: 'telegram' },
+				{ name: 'Website', value: 'website' },
+				{ name: 'SMS', value: 'sms' }
 			],
 			required: true,
 		},
