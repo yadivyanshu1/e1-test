@@ -71,6 +71,11 @@ export class E1TestTrigger implements INodeType {
 				if (!credentials) {
 					return false;
 				}
+				const contextType = credentials?.contextType as 'bot' | 'agent';
+				const platform =
+					contextType === 'agent'
+						? credentials.agentPlatform
+						: credentials.botPlatform;
 
 				const webhookUrl = this.getNodeWebhookUrl('default') as string;
 				const eventType = this.getNodeParameter('eventType') as string;
@@ -78,15 +83,22 @@ export class E1TestTrigger implements INodeType {
 				this.logger.info(`E1TestTrigger: Checking if webhook exists. Event: ${eventType}, Webhook URL: ${webhookUrl}`);
 
 				try {
+					const body: IDataObject = {
+						event: eventType,
+						slug: 'n8n'
+					};
+
+					if (contextType === 'agent') {
+						body.agentId = credentials.agentId;
+					} else {
+						body.category = 'n8n',
+						body.botId = credentials.botId
+					}
+
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'POST',
 						url: 'https://e1-api.botpenguin.com/integrations/custom-app/subscribed-webhoook-urls',
-						body: {
-							botId: credentials.botId,
-							event: eventType,
-							slug: 'n8n',
-							category: 'n8n',
-						},
+						body,
 						headers: {
 							Accept: '*/*',
 							'Content-Type': 'application/json',
@@ -102,12 +114,16 @@ export class E1TestTrigger implements INodeType {
 					if (response.success && Array.isArray(response.data) && response.data.length > 0) {
 						// Look through all items in the data array
 						for (const item of response.data) {
-							if (item.integrationCredentials && item.integrationCredentials[eventType]) {
-								const webhooks = item.integrationCredentials[eventType];
+							const hookSource =
+								contextType === 'agent'
+									? item.integrationData
+									: item.integrationCredentials;
+							if (hookSource && hookSource[eventType]) {
+								const webhooks = hookSource[eventType];
 								if (Array.isArray(webhooks)) {
 									// Check if any webhook URL matches our current webhook URL
 									for (const webhook of webhooks) {
-										if (webhook.url === webhookUrl) {
+										if (webhook.url === webhookUrl && webhook.platform?.toLowerCase() === String(platform).toLowerCase()) {
 											this.logger.info(`E1TestTrigger: Webhook already exists. URL: ${webhookUrl}`);
 											return true;
 										}
@@ -130,21 +146,31 @@ export class E1TestTrigger implements INodeType {
 				if (!credentials) {
 					return false;
 				}
+				const contextType = credentials?.contextType as 'bot' | 'agent';
+				const platform =
+					contextType === 'agent'
+						? credentials.agentPlatform
+						: credentials.botPlatform;
 
 				const webhookUrl = this.getNodeWebhookUrl('default');
 				const eventType = this.getNodeParameter('eventType') as string;
 
 				this.logger.info(`E1TestTrigger: Subscribing to BotPenguin webhook. Event: ${eventType}, Webhook URL: ${webhookUrl}`);
 
-				const body = {
+				const body: IDataObject = {
 					webhookUrl,
-					botId: credentials.botId,
 					event: eventType,
 					slug: 'n8n',
-					category: 'n8n',
-					platform: credentials.platform,
+					platform: platform,
 					subscribe: true,
 				};
+
+				if (contextType === 'agent') {
+					body.agentId = credentials.agentId;
+				} else {
+					body.category = 'n8n',
+					body.botId = credentials.botId
+				}
 
 				this.logger.info(`E1TestTrigger: Subscribe payload: ${JSON.stringify(body)}`);
 
@@ -173,19 +199,30 @@ export class E1TestTrigger implements INodeType {
 				if (!credentials) {
 					return true;
 				}
+				const contextType = credentials?.contextType as 'bot' | 'agent';
+				const platform =
+					contextType === 'agent'
+						? credentials.agentPlatform
+						: credentials.botPlatform;
 
 				const webhookUrl = this.getNodeWebhookUrl('default');
 				const eventType = this.getNodeParameter('eventType') as string;
 
-				const body = {
+				const body: IDataObject = {
 					webhookUrl,
-					botId: credentials.botId,
 					event: eventType,
 					slug: 'n8n',
-					category: 'n8n',
-					platform: credentials.platform,
+					platform,
 					subscribe: false,
 				};
+
+				if (contextType === 'agent') {
+					body.agentId = credentials.agentId;
+				} else {
+					body.category = 'n8n',
+					body.botId = credentials.botId
+				}
+
 				this.logger.info(`E1TestTrigger: Unsubscribing to BotPenguin webhook. Event: ${eventType}, Webhook URL: ${webhookUrl}`);
 
 				try {
