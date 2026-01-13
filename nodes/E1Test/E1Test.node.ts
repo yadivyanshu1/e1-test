@@ -10,6 +10,7 @@ import type {
 	ResourceMapperField,
 } from 'n8n-workflow';
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { BASE_URL } from './constant';
 
 interface ContactPhone {
 	number?: string;
@@ -335,7 +336,7 @@ export class E1Test implements INodeType {
 
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'POST',
-						url: 'https://e1-api.botpenguin.com/inbox/users/import',
+						url: `${BASE_URL}/inbox/users/import`,
 						body: [payload],
 						headers: {
 							Accept: '*/*',
@@ -369,7 +370,7 @@ export class E1Test implements INodeType {
 
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'PUT',
-						url: 'https://e1-api.botpenguin.com/integrations/custom-app/update-user-attributes',
+						url: `${BASE_URL}/integrations/custom-app/update-user-attributes`,
 						body,
 						headers: {
 							Accept: '*/*',
@@ -396,7 +397,7 @@ export class E1Test implements INodeType {
 
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'POST',
-						url: 'https://e1-api.botpenguin.com/integrations/custom-app/send-message-to-plugin',
+						url: `${BASE_URL}/integrations/custom-app/send-message-to-plugin`,
 						body,
 						headers: {
 							Accept: '*/*',
@@ -429,7 +430,7 @@ export class E1Test implements INodeType {
 
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'POST',
-						url: 'https://e1-api.botpenguin.com/whatsapp-automation/plugin/send-template-message',
+						url: `${BASE_URL}/whatsapp-automation/plugin/send-template-message`,
 						body,
 						headers: {
 							Accept: '*/*',
@@ -467,7 +468,7 @@ async function getWhatsAppBots(this: ILoadOptionsFunctions): Promise<INodeProper
 
 	const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 		method: 'GET',
-		url: 'https://e1-api.botpenguin.com/whatsapp-automation',
+		url: `${BASE_URL}/whatsapp-automation`,
 		headers: {
 			Accept: '*/*',
 			authtype: 'Key',
@@ -493,7 +494,7 @@ async function getWhatsAppTemplates(this: ILoadOptionsFunctions): Promise<INodeP
 
 	const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 		method: 'GET',
-		url: `https://e1-api.botpenguin.com/whatsapp-automation/plugin/templates/${botId}`,
+		url: `${BASE_URL}/whatsapp-automation/plugin/templates/${botId}`,
 		headers: {
 			Accept: '*/*',
 			authtype: 'Key',
@@ -531,7 +532,7 @@ async function getTemplateDynamicFields(this: ILoadOptionsFunctions): Promise<Re
 
 	const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 		method: 'GET',
-		url: `https://e1-api.botpenguin.com/whatsapp-automation/plugin/make-template-dynamic-fields/${templateId}`,
+		url: `${BASE_URL}/whatsapp-automation/plugin/make-template-dynamic-fields/${templateId}`,
 		headers: {
 			Accept: '*/*',
 			authtype: 'Key',
