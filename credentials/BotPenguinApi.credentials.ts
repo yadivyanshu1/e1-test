@@ -1,4 +1,5 @@
 import type { ICredentialTestRequest, ICredentialType, Icon, INodeProperties } from 'n8n-workflow';
+import { BASE_URL } from '../nodes/E1Test/constant';
 
 export class BotPenguinApi implements ICredentialType {
 	name = 'botPenguinApi';
@@ -108,7 +109,7 @@ export class BotPenguinApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: 'https://e1-api.botpenguin.com',
+			baseURL: BASE_URL,
 			url: '/integrations/custom-app/general-authentication',
 			method: 'POST',
 			headers: {

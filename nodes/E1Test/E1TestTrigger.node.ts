@@ -9,6 +9,8 @@ import type {
 
 import { NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
 
+import { BASE_URL } from './constant';
+
 export class E1TestTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'BotPenguin Trigger',
@@ -97,7 +99,7 @@ export class E1TestTrigger implements INodeType {
 
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'POST',
-						url: 'https://e1-api.botpenguin.com/integrations/custom-app/subscribed-webhoook-urls',
+						url: `${BASE_URL}/integrations/custom-app/subscribed-webhoook-urls`,
 						body,
 						headers: {
 							Accept: '*/*',
@@ -177,7 +179,7 @@ export class E1TestTrigger implements INodeType {
 				try {
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'POST',
-						url: 'https://e1-api.botpenguin.com/integrations/custom-app/subscribe-trigger-event',
+						url: `${BASE_URL}/integrations/custom-app/subscribe-trigger-event`,
 						body,
 						headers: {
 							Accept: '*/*',
@@ -228,7 +230,7 @@ export class E1TestTrigger implements INodeType {
 				try {
 					await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'POST',
-						url: 'https://e1-api.botpenguin.com/integrations/custom-app/subscribe-trigger-event',
+						url: `${BASE_URL}/integrations/custom-app/subscribe-trigger-event`,
 						body,
 						headers: {
 							Accept: '*/*',
