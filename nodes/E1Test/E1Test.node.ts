@@ -301,12 +301,15 @@ export class E1Test implements INodeType {
 			try {
 				const operation = this.getNodeParameter('operation', itemIndex) as string;
 				const credentials = await this.getCredentials('botPenguinApi');
-				const botId = (credentials?.botId as string) || '';
+
+				const contextType = credentials?.contextType as 'bot' | 'agent';
+				const botId = credentials?.botId as string | undefined;
+				const agentId = credentials?.agentId as string | undefined;
 				const accessToken = (credentials?.accessToken as string) || '';
 				const platform =
-					typeof credentials?.platform === 'string'
-						? (credentials.platform as string).toLowerCase()
-						: undefined;
+					credentials.contextType === 'agent'
+						? credentials.agentPlatform
+						: credentials.botPlatform;
 
 				if (operation === 'createContact') {
 					const userProvidedName = this.getNodeParameter('userProvidedName', itemIndex) as string;
@@ -341,11 +344,7 @@ export class E1Test implements INodeType {
 						headers: {
 							Accept: '*/*',
 							'Content-Type': 'application/json',
-							authtype: 'Key',
-							botId,
-						},
-						qs: {
-							botId,
+							authtype: 'Key'
 						},
 						json: true,
 					});
@@ -363,9 +362,7 @@ export class E1Test implements INodeType {
 						search,
 						attributes: {
 							[attributeKey]: attributeValue,
-						},
-						botId,
-						platform,
+						}
 					};
 
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
@@ -389,23 +386,30 @@ export class E1Test implements INodeType {
 					const search = this.getNodeParameter('searchMessage', itemIndex) as string;
 					const messageText = this.getNodeParameter('messageText', itemIndex) as string;
 
-					const body = {
+					const body: IDataObject = {
 						text: messageText,
 						search,
 						channel: platform
 					};
 
+					const headers: IDataObject = {
+						Accept: '*/*',
+						'Content-Type': 'application/json',
+						authtype: 'Key',
+						Authorization: `Bearer ${accessToken}`,
+					}
+
+					if (contextType === 'agent') {
+						body.agentId = agentId;
+					} else {
+						headers.botId = botId;
+					}
+
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'POST',
 						url: `${BASE_URL}/integrations/custom-app/send-message-to-plugin`,
 						body,
-						headers: {
-							Accept: '*/*',
-							'Content-Type': 'application/json',
-							authtype: 'Key',
-							Authorization: `Bearer ${accessToken}`,
-							botId,
-						},
+						headers,
 						json: true,
 					});
 

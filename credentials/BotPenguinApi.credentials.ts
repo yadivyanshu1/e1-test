@@ -18,21 +18,50 @@ export class BotPenguinApi implements ICredentialType {
 			required: true,
 		},
 		{
+			displayName: 'Context Type',
+			name: 'contextType',
+			type: 'options',
+			default: '',
+			options: [
+				{ name: 'Bot', value: 'bot' },
+				{ name: 'Agent', value: 'agent' },
+			],
+			required: true,
+		},
+		{
 			displayName: 'Bot ID',
 			name: 'botId',
 			type: 'string',
 			default: '',
 			description: 'Bot identifier',
 			required: true,
+			displayOptions: {
+				show: {
+					contextType: ['bot'],
+				},
+			},
+		},
+		{
+			displayName: 'Agent ID',
+			name: 'agentId',
+			type: 'string',
+			default: '',
+			description: 'Agent identifier',
+			required: true,
+			displayOptions: {
+				show: {
+					contextType: ['agent'],
+				},
+			},
 		},
 		{
 			displayName: 'Platform',
-			name: 'platform',
+			name: 'botPlatform',
 			type: 'options',
 			default: 'WhatsApp',
 			description: 'Platform associated with the bot',
 			options: [
-				{ name: 'WhatsApp', value: 'whatsApp' },
+				{ name: 'WhatsApp', value: 'whatsapp' },
 				{ name: 'Instagram', value: 'instagram' },
 				{ name: 'Facebook', value: 'facebook' },
 				{ name: 'Telegram', value: 'telegram' },
@@ -40,7 +69,31 @@ export class BotPenguinApi implements ICredentialType {
 				{ name: 'SMS', value: 'sms' }
 			],
 			required: true,
+			displayOptions: {
+				show: {
+					contextType: ['bot'],
+				},
+			},
 		},
+		{
+			displayName: 'Platform',
+			name: 'agentPlatform',
+			type: 'options',
+			default: 'whatsApp',
+			description: 'Platform associated with the agent',
+			options: [
+				{ name: 'WhatsApp', value: 'whatsapp' },
+				{ name: 'Instagram', value: 'instagram' },
+				{ name: 'Telegram', value: 'telegram' },
+				{ name: 'Website', value: 'website' },
+			],
+			required: true,
+			displayOptions: {
+				show: {
+					contextType: ['agent'],
+				},
+			},
+		}
 	];
 
 	authenticate = {
@@ -48,7 +101,8 @@ export class BotPenguinApi implements ICredentialType {
 		properties: {
 			qs: {
 				access_token: '={{$credentials.accessToken}}',
-				botId: '={{$credentials.botId}}',
+				botId: '={{$credentials.contextType === "bot" ? $credentials.botId : undefined}}',
+				agentId: '={{$credentials.contextType === "agent" ? $credentials.agentId : undefined}}',
 			},
 		},
 	};
@@ -66,8 +120,9 @@ export class BotPenguinApi implements ICredentialType {
 			},
 			body: {
 				slug: 'n8n',
-				botId: '={{$credentials.botId}}',
-				platform: '={{$credentials.platform}}',
+				botId: '={{$credentials.contextType === "bot" ? $credentials.botId : undefined}}',
+				agentId: '={{$credentials.contextType === "agent" ? $credentials.agentId : undefined}}',
+				platform: '={{$credentials.contextType === "agent" ? $credentials.agentPlatform : $credentials.botPlatform}}',
 			},
 			json: true,
 		},
