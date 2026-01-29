@@ -82,7 +82,7 @@ export class E1TestTrigger implements INodeType {
 				try {
 					const response = await this.helpers.httpRequestWithAuthentication.call(this, 'botPenguinApi', {
 						method: 'POST',
-						url: `${BASE_URL}/integrations/custom-app/subscribed-webhoook-urls`,
+						url: `${BASE_URL}/integrations/custom-app/fetch-subscribed-webhooks`,
 						body: {
 							botId: credentials.botId,
 							event: eventType,
