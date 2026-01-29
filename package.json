@@ -1,19 +1,19 @@
 {
-	"name": "n8n-nodes-<...>",
-	"version": "0.1.0",
-	"description": "",
+	"name": "n8n-nodes-e1-test",
+	"version": "1.0.0",
+	"description": "E1 Test node for BotPenguin - Dev",
 	"license": "MIT",
 	"homepage": "",
 	"keywords": [
 		"n8n-community-node-package"
 	],
 	"author": {
-		"name": "",
-		"email": ""
+		"name": "Divyanshu Yadav",
+		"email": "divyanshu1@relinns.com"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/<...>/n8n-nodes-<...>.git"
+		"url": "https://github.com/yadivyanshu1/e1-test.git"
 	},
 	"scripts": {
 		"build": "n8n-node build",
@@ -31,12 +31,11 @@
 		"n8nNodesApiVersion": 1,
 		"strict": true,
 		"credentials": [
-			"dist/credentials/GithubIssuesApi.credentials.js",
-			"dist/credentials/GithubIssuesOAuth2Api.credentials.js"
+			"dist/credentials/BotPenguinApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/GithubIssues/GithubIssues.node.js",
-			"dist/nodes/Example/Example.node.js"
+			"dist/nodes/E1Test/E1Test.node.js",
+			"dist/nodes/E1Test/E1TestTrigger.node.js"
 		]
 	},
 	"devDependencies": {
