@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-e1-test",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"description": "E1 Test node for BotPenguin - Dev",
 	"license": "MIT",
 	"homepage": "",
