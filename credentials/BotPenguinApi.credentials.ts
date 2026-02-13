@@ -29,10 +29,10 @@ export class BotPenguinApi implements ICredentialType {
 			displayName: 'Platform',
 			name: 'platform',
 			type: 'options',
-			default: 'WhatsApp',
+			default: 'whatsapp',
 			description: 'Platform associated with the bot',
 			options: [
-				{ name: 'WhatsApp', value: 'whatsApp' },
+				{ name: 'WhatsApp', value: 'whatsapp' },
 				{ name: 'Instagram', value: 'instagram' },
 				{ name: 'Facebook', value: 'facebook' },
 				{ name: 'Telegram', value: 'telegram' },
