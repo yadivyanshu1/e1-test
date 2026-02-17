@@ -265,21 +265,32 @@ export class E1Test implements INodeType {
 				displayName: 'Template Variables',
 				name: 'templateVariables',
 				type: 'resourceMapper',
-				default: {},
+				default: {
+					mappingMode: 'defineBelow',
+					value: null,
+				},
+				noDataExpression: true,
 				typeOptions: {
-				  resourceMapper: {
-					resourceMapperMethod: 'getTemplateDynamicFields',
-					mode: 'map',
-					addAllFields: false,
-					multiKeyMatch: false,
-				  },
+					loadOptionsDependsOn: ['whatsAppTemplate'],
+					resourceMapper: {
+						resourceMapperMethod: 'getTemplateDynamicFields',
+						mode: 'add',
+						fieldWords: {
+							singular: 'variable',
+							plural: 'variables',
+						},
+						addAllFields: true,
+						supportAutoMap: false,
+						multiKeyMatch: false,
+						noFieldsError: 'Select a WhatsApp template above to load its variables.',
+					},
 				},
 				displayOptions: {
-				  show: {
-					operation: ['sendTemplateMessage'],
-				  },
+					show: {
+						operation: ['sendTemplateMessage'],
+					},
 				},
-			  },
+			},
 		],
 	};
 
@@ -512,19 +523,7 @@ async function getWhatsAppTemplates(this: ILoadOptionsFunctions): Promise<INodeP
 async function getTemplateDynamicFields(this: ILoadOptionsFunctions): Promise<ResourceMapperFields> {
 	const templateId = this.getCurrentNodeParameter('whatsAppTemplate') as string;
 	if (!templateId) {
-		return {
-			fields: [{
-				id: 'placeholder',
-				displayName: 'Select a template to load fields',
-				name: 'placeholder',
-				type: 'string',
-				default: '',
-				description: '',
-				display: false,
-				defaultMatch: false,
-				required: false,
-			} as unknown as ResourceMapperField],
-		};
+		return { fields: [] };
 	}
 
 	const credentials = await this.getCredentials('botPenguinApi');
@@ -541,18 +540,14 @@ async function getTemplateDynamicFields(this: ILoadOptionsFunctions): Promise<Re
 	});
 
 	return {
-		fields: (response.data || []).map((field: IDataObject) => ({
+		fields: (response.data || []).map((field: IDataObject): ResourceMapperField => ({
 			id: field.key as string,
-			displayName: field.key as string,
-			name: field.key as string,
-			type: 'string',
-			default: '',
-			description: field.value as string,
-			placeholder: field.value as string,
-			display: true,
+			displayName: (field.value as string) || (field.key as string),
 			defaultMatch: false,
 			required: false,
-		} as unknown as ResourceMapperField)),
+			display: true,
+			type: 'string',
+		})),
 	};
 }
 
